@@ -5,9 +5,10 @@ library(tidyr)
 
 ############################################
 #### This part should not be included in ui.R and server.R scripts
+# http://localhost:5402/admin/w/6fbaf37bd937904adf2cb1e8df003b15/ds/068d32cd-919b-427b-b432-b4587963af52
 getCtx <- function(session) {
-  ctx <- tercenCtx(stepId = "9b7619c7-4d66-49fa-9bb3-2b06209e58e4",
-                   workflowId = "f81d245ef22a2ff192ed2533a6002ec3")
+  ctx <- tercenCtx(stepId = "068d32cd-919b-427b-b432-b4587963af52",
+                   workflowId = "6fbaf37bd937904adf2cb1e8df003b15")
   return(ctx)
 }
 ####
@@ -52,11 +53,17 @@ server <- shinyServer(function(input, output, session) {
 
 getValues <- function(session){
   ctx <- getCtx(session)
+  browser()
   values <- list()
-
-  values$data <- ctx %>% select(.y, .ri, .ci) %>%
-    group_by(.ci, .ri) %>%
-    summarise(.y = mean(.y)) # take the mean of multiple values per cell
+  
+  values$data <- ctx %>% 
+    select(.y, .ri, .axisIndex) %>%
+    spread(key = .axisIndex, value = .y) %>%
+    mutate(rnames = ctx$rselect()[[1]])
+  
+  colnames(values$data) <- c("rowIndex", 
+                      unlist(ctx$yAxis),
+                      "rowNames")
 
   return(values)
 }
